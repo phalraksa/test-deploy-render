@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ដំណាក់កាលទី ២៖ ដំណើរការកម្មវិធីដោយប្រើ OpenJDK 21
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # បង្កើត User ធម្មតាមួយដើម្បីសុវត្ថិភាព (មិន Run ជា root)
