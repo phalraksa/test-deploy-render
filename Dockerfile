@@ -1,4 +1,3 @@
-# ដំណាក់កាលទី ១៖ Build កូដ Java ទៅជាឯកសារ .jar
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
@@ -6,15 +5,12 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# ដំណាក់កាលទី ២៖ ដំណើរការកម្មវិធីដោយប្រើ OpenJDK 21
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# បង្កើត User ធម្មតាមួយដើម្បីសុវត្ថិភាព (មិន Run ជា root)
 RUN groupadd -r spring && useradd -r -g spring spring
 USER spring:spring
 
-# ចម្លងឯកសារ .jar ពីដំណាក់កាលទី ១
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080

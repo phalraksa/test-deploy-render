@@ -1,0 +1,51 @@
+name: Spring Boot CI/CD to Render (UAT & Prod)
+
+on:
+  push:
+    branches:
+      - uat
+      - main
+
+jobs:
+  # =========================================================
+  # ដំណាក់កាលទី ១៖ ពិនិត្យកូដ Maven និងសាកល្បង Build Docker (CI)
+  # =========================================================
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build & Run Unit Tests with Maven
+        run: mvn clean test
+
+      - name: Verify Docker Image Build
+        run: docker build -t springboot-app-verify .
+
+  # =========================================================
+  # ដំណាក់កាលទី ២៖ Deploy ទៅកាន់ Render តាម Branch (CD)
+  # =========================================================
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to UAT Environment
+        if: github.ref == 'refs/heads/uat'
+        run: |
+          echo "Triggering Render UAT deployment..."
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_UAT }}"
+
+      - name: Deploy to Production Environment
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Triggering Render Production deployment..."
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}"
